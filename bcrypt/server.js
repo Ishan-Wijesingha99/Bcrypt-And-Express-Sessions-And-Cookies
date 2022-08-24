@@ -9,16 +9,15 @@
 const express = require('express')
 const app = express()
 
-// middleware
-app.use(express.json())
-app.use(express.urlencoded({extended: false}))
-
 // bcrypt package
 const bcrypt = require('bcrypt')
 
 // mysql
 const mysql = require('mysql2')
 
+// middleware
+app.use(express.json())
+app.use(express.urlencoded({extended: false}))
 
 
 
@@ -34,11 +33,17 @@ const sequelize = new Sequelize(
     host: 'localhost',
     dialect: 'mysql',
     port: 4000,
+    define: {
+        freezeTableName: true,
+        timestamps: false
+    }
   }
 );
 
-// create table using sequelize
-const User = sequelize.define('User', {
+
+
+// create table/model using sequelize
+const User = sequelize.define('user', {
     user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -55,14 +60,14 @@ const User = sequelize.define('User', {
     }
 },
 {
-    timestamps: false
+    timestamps: false,
+    underscored: true
 })
 
 
 
-
-
 // here we will have POST requests, one for the user signing up and one for the user logging in
+
 app.post('/signup', async (req, res) => {
 
     try {
@@ -89,22 +94,25 @@ app.post('/signup', async (req, res) => {
         res.status(400).json(error)
     }
 
-    
 })
 
 app.post('/login', async (req, res) => {
-    // the username and password will be sent in req.body
+
     try {
+        
+        // the username and password will be sent in req.body
         const {username, password} = req.body
 
+        // based off the username in req.body, find the relevant row in the users table
         const currentUserObject = await User.findOne({where: {username: username}}).then(data => data.toJSON())
 
+        // if no username was found in the table, currentUserObject should be undefined, this guard clause will immediately return an error to the user
         if(!currentUserObject) {
             return res.status(400).json('Username does not exist')
         }
 
         // bcrypt.compareSync() returns true or false, it compares the two arguments specified and if they are the same, it returns true
-        // compareSync() is synchronous, the asychronous version is just .compare
+        // compareSync() is synchronous, the asychronous version is just .compare()
         const correctPasswordOrNot = bcrypt.compareSync(password, currentUserObject.passwordHashed)
 
         if(correctPasswordOrNot) {
@@ -117,16 +125,16 @@ app.post('/login', async (req, res) => {
         console.log(error)
         res.status(400).json(error)
     }
-
-
    
 })
 
 
+
+// sync then listen to port
 sequelize.sync({force: true})
 .then(() => {
     app.listen(4000, () => {
         console.log('Server listening on port 4000...')
     })
-})
+}).catch(err => console.log(err))
 
