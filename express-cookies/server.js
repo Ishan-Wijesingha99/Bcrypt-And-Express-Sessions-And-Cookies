@@ -25,6 +25,7 @@ app.use(express.urlencoded({extended: true}))
 app.use(cookieParser())
 
 
+
 app.get('/addcookie/:username', (req, res) => {
     // let's get the route parameter out of req.params
     const {username} = req.params
@@ -43,6 +44,38 @@ app.get('/', (req, res) => {
 
     res.status(200).send('Home Page')
 })
+
+
+
+// we can also check cookies in the browser
+// go to Application in chrome devtools, and under cookies there will be all the key-value pairs per domain
+
+// you will also see the attributes of a cookie in the chrome devtools
+
+
+
+// to set attributes on a cookie, when you use res.cookie(), the third argument will be an options object that specifies these attributes
+
+
+
+// cookie expiration
+// to set an expiration time, we use the options object which is the third argument in res.cookie()
+// if we don't specify the expiration time, the by default the cookie will expire when the BROWSER is closed (not tab)
+
+
+
+// you can also clear a cookie directly in express
+app.get('/clearcookie', (req, res) => {
+    res.clearCookie('user')
+
+    res.status(200).send('Cookie cleared')
+})
+
+
+
+// you can also check the header of a http request and it will show information about the cookie(s), because all requests we're dealing with are http requests
+// go to the Network tab on Chrome devtools, click on the request and then go to Headers, you will see the information under Set-Cookie
+
 
 
 app.listen(3000, () => {
