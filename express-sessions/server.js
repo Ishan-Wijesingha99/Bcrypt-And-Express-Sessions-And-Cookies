@@ -101,3 +101,6 @@ app.listen(2001, () => {
 
 
 
+// to set up sequelize store with express-session, check the documentation
+// it's under express 4
+// https://www.npmjs.com/package/connect-session-sequelize
